@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/prisma';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { Package, Truck, CheckCircle2, AlertTriangle, PackageOpen, MapPin, Calendar, User, Navigation, ArrowLeft } from 'lucide-react';
+import { Package, Truck, CheckCircle2, AlertTriangle, PackageOpen, MapPin, Calendar, User, Navigation, ArrowLeft, Scale, Phone } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -97,7 +97,7 @@ export default async function TrackPage({
           </div>
           
           {/* Details Row */}
-          {(packageData.carrier || packageData.destination || packageData.clientName) && (
+          {(packageData.carrier || packageData.destination || packageData.clientName || packageData.weight || packageData.clientPhone) && (
             <div className="mt-6 pt-6 border-t border-slate-100 grid grid-cols-2 sm:grid-cols-3 gap-4">
               {packageData.carrier && (
                 <div>
@@ -117,12 +117,30 @@ export default async function TrackPage({
                   </p>
                 </div>
               )}
+              {packageData.weight !== null && (
+                <div>
+                  <p className="text-xs text-slate-400 font-medium uppercase">Poids</p>
+                  <p className="font-medium text-slate-700 flex items-center mt-1">
+                    <Scale className="w-4 h-4 mr-2 text-slate-400" />
+                    {packageData.weight} kg
+                  </p>
+                </div>
+              )}
               {packageData.clientName && (
                 <div className="col-span-2 sm:col-span-1">
                   <p className="text-xs text-slate-400 font-medium uppercase">Destinataire</p>
                   <p className="font-medium text-slate-700 flex items-center mt-1">
                     <User className="w-4 h-4 mr-2 text-slate-400" />
                     {packageData.clientName}
+                  </p>
+                </div>
+              )}
+              {packageData.clientPhone && (
+                <div className="col-span-2 sm:col-span-1">
+                  <p className="text-xs text-slate-400 font-medium uppercase">Téléphone</p>
+                  <p className="font-medium text-slate-700 flex items-center mt-1">
+                    <Phone className="w-4 h-4 mr-2 text-slate-400" />
+                    {packageData.clientPhone}
                   </p>
                 </div>
               )}

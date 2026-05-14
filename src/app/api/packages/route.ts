@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
+import { sendPackageCreatedEmail } from '@/lib/email';
 
 const createPackageSchema = z.object({
   trackingNumber: z.string().min(1, 'Le numéro de suivi est requis'),
@@ -9,6 +10,7 @@ const createPackageSchema = z.object({
   clientPhone: z.string().optional(),
   destination: z.string().optional(),
   carrier: z.string().optional(),
+  weight: z.coerce.number().optional(),
   initialStatus: z.string().optional().default('PREPARATION'),
 });
 
@@ -33,6 +35,7 @@ export async function POST(req: Request) {
         clientPhone: data.clientPhone,
         destination: data.destination,
         carrier: data.carrier,
+        weight: data.weight,
         events: {
           create: {
             status: data.initialStatus,
@@ -44,6 +47,15 @@ export async function POST(req: Request) {
         events: true,
       },
     });
+
+    // Envoyer l'email de création de colis (asynchrone)
+    if (newPackage.clientEmail) {
+      sendPackageCreatedEmail(
+        newPackage.clientEmail,
+        newPackage.trackingNumber,
+        data.initialStatus
+      );
+    }
 
     return NextResponse.json(newPackage, { status: 201 });
   } catch (error) {

@@ -18,6 +18,7 @@ type Package = {
   clientPhone: string | null;
   destination: string | null;
   carrier: string | null;
+  weight: number | null;
   createdAt: string;
   events: {
     status: string;
@@ -45,6 +46,7 @@ export default function AdminDashboard() {
   const [clientPhone, setClientPhone] = useState('');
   const [destination, setDestination] = useState('');
   const [carrier, setCarrier] = useState('');
+  const [weight, setWeight] = useState('');
   const [initialStatus, setInitialStatus] = useState('PREPARATION');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -90,6 +92,7 @@ export default function AdminDashboard() {
         clientPhone: clientPhone || undefined,
         destination: destination || undefined,
         carrier: carrier || undefined,
+        weight: weight ? parseFloat(weight) : undefined,
         initialStatus
       };
       
@@ -106,6 +109,7 @@ export default function AdminDashboard() {
         setClientPhone('');
         setDestination('');
         setCarrier('');
+        setWeight('');
         setInitialStatus('PREPARATION');
         generateTrackingNumber();
         fetchPackages(); // Reload list
@@ -254,6 +258,10 @@ export default function AdminDashboard() {
               <input type="text" className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none" placeholder="Colissimo" value={carrier} onChange={(e) => setCarrier(e.target.value)} />
             </div>
             <div className="space-y-1">
+              <label className="text-sm font-medium text-slate-700">Poids du colis (kg)</label>
+              <input type="number" step="0.01" min="0" className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none" placeholder="Ex: 2.5" value={weight} onChange={(e) => setWeight(e.target.value)} />
+            </div>
+            <div className="space-y-1">
               <label className="text-sm font-medium text-slate-700">Statut initial</label>
               <select className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none bg-white" value={initialStatus} onChange={(e) => setInitialStatus(e.target.value)}>
                 {Object.entries(STATUS_CONFIG).map(([key, config]) => (
@@ -261,7 +269,7 @@ export default function AdminDashboard() {
                 ))}
               </select>
             </div>
-            <div className="flex items-end">
+            <div className="flex items-end lg:col-span-2">
               <button type="submit" className="btn btn-primary w-full h-[38px]" disabled={isSubmitting}>
                 {isSubmitting ? 'Création...' : 'Créer le colis'}
               </button>
@@ -296,6 +304,7 @@ export default function AdminDashboard() {
                     <th className="px-6 py-3 font-medium">Client</th>
                     <th className="px-6 py-3 font-medium">Destination</th>
                     <th className="px-6 py-3 font-medium">Transporteur</th>
+                    <th className="px-6 py-3 font-medium">Poids</th>
                     <th className="px-6 py-3 font-medium">Statut</th>
                     <th className="px-6 py-3 font-medium">Date</th>
                     <th className="px-6 py-3 font-medium text-right">Actions</th>
@@ -313,9 +322,11 @@ export default function AdminDashboard() {
                         <td className="px-6 py-4">
                           <div className="font-medium text-slate-900">{pkg.clientName || 'N/A'}</div>
                           <div className="text-slate-500 text-xs">{pkg.clientEmail}</div>
+                          {pkg.clientPhone && <div className="text-slate-500 text-xs mt-0.5">{pkg.clientPhone}</div>}
                         </td>
                         <td className="px-6 py-4 text-slate-600">{pkg.destination || '-'}</td>
                         <td className="px-6 py-4 text-slate-600">{pkg.carrier || '-'}</td>
+                        <td className="px-6 py-4 text-slate-600">{pkg.weight ? `${pkg.weight} kg` : '-'}</td>
                         <td className="px-6 py-4">
                           <span className={cn("inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border", statusCfg.color)}>
                             <StatusIcon className="w-3 h-3 mr-1" />
@@ -354,7 +365,7 @@ export default function AdminDashboard() {
                   })}
                   {filteredPackages.length === 0 && (
                     <tr>
-                      <td colSpan={7} className="px-6 py-8 text-center text-slate-500">
+                      <td colSpan={8} className="px-6 py-8 text-center text-slate-500">
                         Aucun colis trouvé pour votre recherche.
                       </td>
                     </tr>
