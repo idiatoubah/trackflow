@@ -178,8 +178,9 @@ export default function AdminDashboard() {
     const transit = packages.filter(p => p.events[0]?.status === 'IN_TRANSIT').length;
     const delivered = packages.filter(p => p.events[0]?.status === 'DELIVERED').length;
     const delayed = packages.filter(p => p.events[0]?.status === 'DELAYED').length;
+    const totalWeight = packages.reduce((acc, p) => acc + (p.weight || 0), 0);
     
-    return { total, prep, shipped, transit, delivered, delayed };
+    return { total, prep, shipped, transit, delivered, delayed, totalWeight };
   }, [packages]);
 
   return (
@@ -200,10 +201,16 @@ export default function AdminDashboard() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         
         {/* KPIs */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-4">
           <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
             <p className="text-sm text-slate-500 font-medium">Total Colis</p>
             <p className="text-2xl font-bold text-slate-900 mt-1">{kpis.total}</p>
+          </div>
+          <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+            <p className="text-sm text-slate-500 font-medium">Total Kilos</p>
+            <p className="text-2xl font-bold text-indigo-600 mt-1">
+              {kpis.totalWeight.toLocaleString('fr-FR', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kg
+            </p>
           </div>
           <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
             <p className="text-sm text-slate-500 font-medium">En préparation</p>
