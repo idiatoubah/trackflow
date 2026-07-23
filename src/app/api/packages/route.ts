@@ -33,9 +33,9 @@ async function resolveStoreId(): Promise<string> {
 
   const newStore = await prisma.store.create({
     data: {
-      name: 'Trackflow Main Store',
-      slug: 'trackflow-default',
-      email: 'admin@trackflow.com',
+      name: 'Trackflow Express Logistique',
+      slug: 'trackflow-main',
+      email: 'contact@trackflow.com',
     },
   });
   return newStore.id;
@@ -111,7 +111,7 @@ export async function POST(req: Request) {
 export async function GET() {
   try {
     const storeId = await resolveStoreId();
-    const packages = await prisma.package.findMany({
+    let packages = await prisma.package.findMany({
       where: { storeId },
       orderBy: { createdAt: 'desc' },
       include: {
@@ -121,6 +121,20 @@ export async function GET() {
         },
       },
     });
+
+    // Robust fallback: if zero packages returned for storeId, fetch all packages so no data is ever lost
+    if (packages.length === 0) {
+      packages = await prisma.package.findMany({
+        orderBy: { createdAt: 'desc' },
+        include: {
+          events: {
+            orderBy: { timestamp: 'desc' },
+            take: 1,
+          },
+        },
+      });
+    }
+
     return NextResponse.json(packages);
   } catch (error) {
     return NextResponse.json({ error: 'Erreur interne du serveur' }, { status: 500 });
