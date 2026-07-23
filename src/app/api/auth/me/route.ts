@@ -1,8 +1,11 @@
 import { NextResponse } from 'next/server';
 import { getSession, createSession } from '@/lib/auth/session';
 import { prisma } from '@/lib/prisma';
+import { ensureDatabaseSeeded } from '@/lib/autoSeed';
 
 export async function GET() {
+  await ensureDatabaseSeeded();
+
   let session = await getSession();
 
   if (!session) {

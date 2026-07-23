@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 import { eventBus } from '@/lib/events/eventBus';
 import { getSession } from '@/lib/auth/session';
+import { ensureDatabaseSeeded } from '@/lib/autoSeed';
 import '@/lib/notifications/subscribers';
 
 const createPackageSchema = z.object({
@@ -21,6 +22,7 @@ const createPackageSchema = z.object({
 });
 
 async function resolveStoreId(): Promise<string> {
+  await ensureDatabaseSeeded();
   const session = await getSession();
   if (session?.storeId) return session.storeId;
 
@@ -63,14 +65,13 @@ export async function POST(req: Request) {
         destination: data.destination,
         carrier: data.carrier,
         weight: data.weight,
-        departureDate: data.departureDate ? new Date(data.departureDate) : null,
         notifyEmail: data.notifyEmail,
         notifySms: data.notifySms,
         notifyWhatsapp: data.notifyWhatsapp,
+        departureDate: data.departureDate ? new Date(data.departureDate) : null,
         events: {
           create: {
             status: data.initialStatus,
-            notes: 'Colis créé',
           },
         },
       },
@@ -79,13 +80,9 @@ export async function POST(req: Request) {
       },
     });
 
-    // Publish PACKAGE_CREATED Domain Event to EventBus
-    eventBus.publish({
-      id: `evt_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+    // Publish domain event
+    await eventBus.publish({
       type: 'PACKAGE_CREATED',
-      aggregateId: newPackage.id,
-      timestamp: new Date(),
-      idempotencyKey: `PACKAGE_CREATED_${newPackage.id}`,
       payload: {
         packageId: newPackage.id,
         trackingNumber: newPackage.trackingNumber,
