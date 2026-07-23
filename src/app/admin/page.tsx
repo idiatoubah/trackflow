@@ -201,9 +201,12 @@ export default function AdminDashboard() {
   const [isSavingTemplate, setIsSavingTemplate] = useState(false);
 
   useEffect(() => {
-    fetchAuthAndStore();
-    fetchPackages();
-    generateTrackingNumber();
+    const init = async () => {
+      await fetchAuthAndStore();
+      await fetchPackages();
+      generateTrackingNumber();
+    };
+    init();
   }, []);
 
   useEffect(() => {
