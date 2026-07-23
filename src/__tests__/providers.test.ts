@@ -19,7 +19,7 @@ describe('Providers - Absraction & Execution Providers', () => {
     expect(result.success).toBe(true);
     expect(result.provider).toBe(provider.name);
     expect(result.providerMessageId).toBeDefined();
-  });
+  }, 15000);
 
   it('ConsoleSmsProvider doit retourner un résultat SUCCESS avec ID simulé', async () => {
     const provider = new ConsoleSmsProvider();

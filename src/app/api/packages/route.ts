@@ -2,8 +2,6 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 import { eventBus } from '@/lib/events/eventBus';
-import { getSession } from '@/lib/auth/session';
-import { ensureDatabaseSeeded } from '@/lib/autoSeed';
 import '@/lib/notifications/subscribers';
 
 const createPackageSchema = z.object({
@@ -21,34 +19,8 @@ const createPackageSchema = z.object({
   initialStatus: z.string().optional().default('PREPARATION'),
 });
 
-async function resolveStoreId(): Promise<string> {
-  await ensureDatabaseSeeded();
-
-  const mainStore = await prisma.store.findFirst({
-    where: {
-      OR: [
-        { slug: 'trackflow-main' },
-        { name: { contains: 'Trackflow Express Logistique' } }
-      ]
-    },
-    orderBy: { createdAt: 'asc' },
-  }) || await prisma.store.findFirst({ orderBy: { createdAt: 'asc' } });
-
-  if (mainStore) return mainStore.id;
-
-  const newStore = await prisma.store.create({
-    data: {
-      name: 'Trackflow Express Logistique',
-      slug: 'trackflow-main',
-      email: 'contact@trackflow.com',
-    },
-  });
-  return newStore.id;
-}
-
 export async function POST(req: Request) {
   try {
-    const storeId = await resolveStoreId();
     const body = await req.json();
     const data = createPackageSchema.parse(body);
 
@@ -62,7 +34,6 @@ export async function POST(req: Request) {
 
     const newPackage = await prisma.package.create({
       data: {
-        storeId,
         trackingNumber: data.trackingNumber,
         clientEmail: data.clientEmail,
         clientName: data.clientName,
@@ -77,6 +48,7 @@ export async function POST(req: Request) {
         events: {
           create: {
             status: data.initialStatus,
+            notes: 'Colis créé',
           },
         },
       },
@@ -85,7 +57,7 @@ export async function POST(req: Request) {
       },
     });
 
-    // Publish domain event
+    // Publish domain event for automatic notifications
     await eventBus.publish({
       type: 'PACKAGE_CREATED',
       payload: {
@@ -115,9 +87,7 @@ export async function POST(req: Request) {
 
 export async function GET() {
   try {
-    const storeId = await resolveStoreId();
-    let packages = await prisma.package.findMany({
-      where: { storeId },
+    const packages = await prisma.package.findMany({
       orderBy: { createdAt: 'desc' },
       include: {
         events: {
@@ -126,19 +96,6 @@ export async function GET() {
         },
       },
     });
-
-    if (packages.length === 0) {
-      packages = await prisma.package.findMany({
-        orderBy: { createdAt: 'desc' },
-        include: {
-          events: {
-            orderBy: { timestamp: 'desc' },
-            take: 1,
-          },
-        },
-      });
-    }
-
     return NextResponse.json(packages);
   } catch (error) {
     return NextResponse.json({ error: 'Erreur interne du serveur' }, { status: 500 });
