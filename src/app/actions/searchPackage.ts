@@ -16,7 +16,7 @@ export async function searchPackage(query: string) {
   // If not found, search by email
   if (!pkg) {
     pkg = await prisma.package.findFirst({
-      where: { clientEmail: { equals: cleanQuery, mode: 'insensitive' } },
+      where: { clientEmail: { equals: cleanQuery.toLowerCase() } },
       orderBy: { createdAt: 'desc' }
     });
   }

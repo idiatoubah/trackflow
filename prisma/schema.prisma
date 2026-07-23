@@ -6,31 +6,130 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DATABASE_URL_UNPOOLED")
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Store {
+  id                 String                 @id @default(uuid())
+  name               String
+  slug               String                 @unique
+  logoUrl            String?
+  address            String?
+  phone              String?
+  email              String                 @unique
+  country            String?                @default("Guinée")
+  managerName        String?
+  subscriptionPlan   String                 @default("FREE") // FREE, PRO, ENTERPRISE
+  subscriptionStatus String                 @default("ACTIVE") // ACTIVE, EXPIRED, PAUSED
+  createdAt          DateTime               @default(now())
+  updatedAt          DateTime               @updatedAt
+  users              User[]
+  packages           Package[]
+  notificationLogs   NotificationLog[]
+  templates          NotificationTemplate[]
+
+  @@index([slug])
+}
+
+model User {
+  id               String    @id @default(uuid())
+  storeId          String
+  store            Store     @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  email            String    @unique
+  passwordHash     String
+  name             String?
+  role             String    @default("AGENT") // OWNER, ADMIN, AGENT, SUPER_ADMIN
+  isActive         Boolean   @default(true)
+  resetToken       String?
+  resetTokenExpiry DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@index([storeId])
 }
 
 model Package {
-  id             String          @id @default(uuid())
-  trackingNumber String          @unique
-  clientEmail    String
-  clientName     String?
-  clientPhone    String?
-  destination    String?
-  carrier        String?
-  weight         Float?
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
-  events         TrackingEvent[]
+  id               String            @id @default(uuid())
+  trackingNumber   String            @unique
+  storeId          String?
+  store            Store?            @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  clientEmail      String
+  clientName       String?
+  clientPhone      String?
+  destination      String?
+  carrier          String?
+  weight           Float?
+  notifyEmail      Boolean           @default(true)
+  notifySms        Boolean           @default(true)
+  notifyWhatsapp   Boolean           @default(false)
+  departureDate    DateTime?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  events           TrackingEvent[]
+  notificationLogs NotificationLog[]
+
+  @@index([storeId])
+  @@index([storeId, trackingNumber])
+  @@index([departureDate, destination])
 }
 
 model TrackingEvent {
-  id          String   @id @default(uuid())
-  status      String
-  location    String?
-  notes       String?
-  timestamp   DateTime @default(now())
-  packageId   String
-  package     Package  @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  id        String   @id @default(uuid())
+  status    String
+  location  String?
+  notes     String?
+  timestamp DateTime @default(now())
+  packageId String
+  package   Package  @relation(fields: [packageId], references: [id], onDelete: Cascade)
+}
+
+model NotificationTemplate {
+  id        String   @id @default(uuid())
+  storeId   String?
+  store     Store?   @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  channel   String   // EMAIL, SMS, WHATSAPP
+  statusKey String   // PREPARATION, SHIPPED, IN_TRANSIT, ARRIVED, AVAILABLE, DELIVERED, DELAYED, INCIDENT, CREATED
+  subject   String?  // Sujet template (Email)
+  bodyHtml  String?  // Corps HTML template (Email)
+  bodyText  String   // Corps Texte template (SMS, Email text, WhatsApp)
+  version   Int      @default(1)
+  isDefault Boolean  @default(true)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([channel, statusKey, version])
+  @@index([storeId])
+}
+
+model NotificationLog {
+  id                String   @id @default(uuid())
+  idempotencyKey    String?  @unique
+  storeId           String?
+  store             Store?   @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  trackingNumber    String
+  packageId         String?
+  package           Package? @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  type              String   // EMAIL, SMS, WHATSAPP
+  recipient         String
+  provider          String
+  providerMessageId String?
+  previousStatus    String?
+  newStatus         String
+  success           Boolean  @default(false)
+  status            String   @default("PENDING") // PENDING, SUCCESS, DELIVERED, FAILED, BOUNCED, UNDELIVERED, SKIPPED
+  responseTimeMs    Int?
+  statusCode        Int?
+  errorMessage      String?
+  attempts          Int      @default(1)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([storeId])
+  @@index([trackingNumber])
+  @@index([providerMessageId])
+  @@index([type])
+  @@index([success])
+  @@index([createdAt])
 }
