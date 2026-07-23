@@ -694,6 +694,15 @@ export default function AdminDashboard() {
 
           <div className="flex items-center gap-2">
             <Link
+              href="/register-store"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors border border-emerald-200"
+              title="Créer une nouvelle entreprise / boutique"
+            >
+              <Building2 className="w-3.5 h-3.5 text-emerald-600" />
+              <span className="hidden sm:inline">Créer Entreprise</span>
+            </Link>
+
+            <Link
               href="/"
               className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors border"
               title="Retourner à l'accueil du site"

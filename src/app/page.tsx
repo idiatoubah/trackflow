@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Package, ArrowRight, ShieldCheck, Zap, Search, LayoutDashboard } from 'lucide-react';
+import { Package, ArrowRight, ShieldCheck, Zap, Search, LayoutDashboard, Building2 } from 'lucide-react';
 
 export default function Home() {
   const router = useRouter();
@@ -31,6 +31,14 @@ export default function Home() {
           </div>
 
           <div className="flex items-center gap-3">
+            <Link
+              href="/register-store"
+              className="px-3.5 py-2 text-slate-700 hover:text-blue-600 hover:bg-blue-50 font-bold text-xs sm:text-sm rounded-xl transition-all flex items-center gap-2 border border-slate-200"
+            >
+              <Building2 className="w-4 h-4 text-emerald-600" />
+              <span>Créer une Entreprise</span>
+            </Link>
+
             <Link
               href="/admin"
               className="px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs sm:text-sm rounded-xl shadow-md shadow-blue-600/20 transition-all flex items-center gap-2 active:scale-95"
@@ -83,6 +91,14 @@ export default function Home() {
           </form>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-2">
+            <Link
+              href="/register-store"
+              className="px-8 py-3.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm rounded-xl shadow-lg shadow-emerald-600/20 transition-all flex items-center gap-2 w-full sm:w-auto justify-center active:scale-95"
+            >
+              <Building2 className="w-4 h-4" />
+              <span>Créer mon Entreprise / Boutique</span>
+            </Link>
+
             <Link
               href="/admin"
               className="px-8 py-3.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-sm rounded-xl shadow-lg transition-all flex items-center gap-2 w-full sm:w-auto justify-center active:scale-95"
