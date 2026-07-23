@@ -23,13 +23,18 @@ const createPackageSchema = z.object({
 
 async function resolveStoreId(): Promise<string> {
   await ensureDatabaseSeeded();
-  const session = await getSession();
-  if (session?.storeId) return session.storeId;
 
-  const defaultStore = await prisma.store.findFirst({
+  const mainStore = await prisma.store.findFirst({
+    where: {
+      OR: [
+        { slug: 'trackflow-main' },
+        { name: { contains: 'Trackflow Express Logistique' } }
+      ]
+    },
     orderBy: { createdAt: 'asc' },
-  });
-  if (defaultStore) return defaultStore.id;
+  }) || await prisma.store.findFirst({ orderBy: { createdAt: 'asc' } });
+
+  if (mainStore) return mainStore.id;
 
   const newStore = await prisma.store.create({
     data: {
@@ -122,7 +127,6 @@ export async function GET() {
       },
     });
 
-    // Robust fallback: if zero packages returned for storeId, fetch all packages so no data is ever lost
     if (packages.length === 0) {
       packages = await prisma.package.findMany({
         orderBy: { createdAt: 'desc' },
