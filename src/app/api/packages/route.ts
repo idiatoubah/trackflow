@@ -59,7 +59,11 @@ export async function POST(req: Request) {
 
     // Publish domain event for automatic notifications
     await eventBus.publish({
+      id: `evt_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
       type: 'PACKAGE_CREATED',
+      aggregateId: newPackage.id,
+      timestamp: new Date(),
+      idempotencyKey: `created_${newPackage.id}_${Date.now()}`,
       payload: {
         packageId: newPackage.id,
         trackingNumber: newPackage.trackingNumber,

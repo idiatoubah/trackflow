@@ -43,7 +43,7 @@ export async function DELETE(
     }
 
     // Supprimer les événements associés puis le colis
-    await prisma.event.deleteMany({
+    await prisma.trackingEvent.deleteMany({
       where: { packageId: existingPackage.id },
     });
 

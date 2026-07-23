@@ -703,16 +703,6 @@ export default function AdminDashboard() {
             </Link>
 
             <button
-              onClick={() => {
-                alert("📱 Pour installer Trackflow sur votre téléphone :\n\n• Android / Chrome : Cliquez sur le bouton 'Installer' en bas de l'écran\n• iPhone / Safari : Appuyez sur le bouton Partager ⎘ ➔ Sur l'écran d'accueil ➕");
-              }}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs rounded-lg transition-all shadow-sm active:scale-95"
-            >
-              <Smartphone className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">PWA</span>
-            </button>
-
-            <button
               onClick={handleLogout}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-slate-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors border"
               title="Se déconnecter"

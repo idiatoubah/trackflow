@@ -82,7 +82,7 @@ export async function ensureDatabaseSeeded() {
 
         if (pkg.events && pkg.events.length > 0) {
           for (const ev of pkg.events) {
-            await prisma.event.create({
+            await prisma.trackingEvent.create({
               data: {
                 id: ev.id,
                 packageId: ev.packageId,
