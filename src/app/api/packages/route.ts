@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { eventBus } from '@/lib/events/eventBus';
 import { getSession } from '@/lib/auth/session';
 import { ensureDatabaseSeeded } from '@/lib/autoSeed';
-import seedData from '../../../prisma/seedData.json';
+import seedData from '../../../../prisma/seedData.json';
 import '@/lib/notifications/subscribers';
 
 export const dynamic = 'force-dynamic';
