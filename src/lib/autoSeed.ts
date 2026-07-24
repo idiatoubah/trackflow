@@ -5,13 +5,16 @@ let seedingInProgress = false;
 
 export async function ensureDatabaseSeeded() {
   if (seedingInProgress) return;
-  
+
   try {
-    const packageCount = await prisma.package.count();
-    if (packageCount > 0) return; // Database already contains data
+    const bvPackageCount = await prisma.package.count({
+      where: { trackingNumber: { startsWith: 'BV-' } },
+    });
+
+    if (bvPackageCount >= 17) return; // All 17 packages are present
 
     seedingInProgress = true;
-    console.log('[AutoSeed] Détection d’une base de données vide. Démarrage de la restauration des données...');
+    console.log('[AutoSeed] Restauration des 17 colis officiels BV-0001 à BV-0018...');
 
     // 1. Seed Stores
     for (const store of seedData.stores) {
@@ -82,45 +85,25 @@ export async function ensureDatabaseSeeded() {
 
         if (pkg.events && pkg.events.length > 0) {
           for (const ev of pkg.events) {
-            await prisma.trackingEvent.create({
-              data: {
-                id: ev.id,
-                packageId: ev.packageId,
-                status: ev.status,
-                location: ev.location,
-                notes: ev.notes,
-                timestamp: new Date(ev.timestamp),
-              },
-            });
+            const existingEv = await prisma.trackingEvent.findUnique({ where: { id: ev.id } });
+            if (!existingEv) {
+              await prisma.trackingEvent.create({
+                data: {
+                  id: ev.id,
+                  packageId: ev.packageId,
+                  status: ev.status,
+                  location: ev.location,
+                  notes: ev.notes,
+                  timestamp: new Date(ev.timestamp),
+                },
+              });
+            }
           }
         }
       }
     }
 
-    // 4. Seed Templates
-    for (const t of seedData.templates) {
-      const existing = await prisma.notificationTemplate.findUnique({ where: { id: t.id } });
-      if (!existing) {
-        await prisma.notificationTemplate.create({
-          data: {
-            id: t.id,
-            storeId: t.storeId,
-            channel: t.channel,
-            statusKey: t.statusKey,
-            subject: t.subject,
-            bodyText: t.bodyText,
-            bodyHtml: t.bodyHtml,
-            version: t.version,
-            isDefault: t.isDefault,
-            isActive: t.isActive,
-            createdAt: new Date(t.createdAt),
-            updatedAt: new Date(t.updatedAt),
-          },
-        });
-      }
-    }
-
-    console.log('[AutoSeed] Restauration des données réussie avec succès !');
+    console.log('[AutoSeed] Restauration des 17 colis officiels terminée avec succès !');
   } catch (err) {
     console.error('[AutoSeed] Erreur lors de l’auto-restauration des données:', err);
   } finally {
