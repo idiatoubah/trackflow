@@ -3,6 +3,8 @@ import { getSession } from '@/lib/auth/session';
 import { prisma } from '@/lib/prisma';
 import { ensureDatabaseSeeded } from '@/lib/autoSeed';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   await ensureDatabaseSeeded();
 

@@ -6,6 +6,8 @@ import { getSession } from '@/lib/auth/session';
 import { ensureDatabaseSeeded } from '@/lib/autoSeed';
 import '@/lib/notifications/subscribers';
 
+export const dynamic = 'force-dynamic';
+
 const createPackageSchema = z.object({
   trackingNumber: z.string().min(1, 'Le numéro de suivi est requis'),
   clientEmail: z.string().email('Email Invalide'),
