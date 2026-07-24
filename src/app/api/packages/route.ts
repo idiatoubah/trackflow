@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { eventBus } from '@/lib/events/eventBus';
 import { getSession } from '@/lib/auth/session';
 import { ensureDatabaseSeeded } from '@/lib/autoSeed';
+import seedData from '../../../prisma/seedData.json';
 import '@/lib/notifications/subscribers';
 
 export const dynamic = 'force-dynamic';
@@ -145,8 +146,13 @@ export async function GET() {
       },
     });
 
-    return NextResponse.json(packages);
+    if (packages.length > 0) {
+      return NextResponse.json(packages);
+    }
   } catch (error) {
-    return NextResponse.json({ error: 'Erreur interne du serveur' }, { status: 500 });
+    console.error('Erreur GET /api/packages:', error);
   }
+
+  // Fallback to static seedData packages
+  return NextResponse.json(seedData.packages);
 }
